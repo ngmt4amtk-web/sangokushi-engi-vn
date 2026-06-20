@@ -193,9 +193,11 @@ function setBg(bgKey, mood){
   hideCg();
   const bg=E('bg'), tint=E('bgtint');
   if(bgKey){
-    bg.style.background='#000';
-    bg.style.backgroundImage="url('assets/bg/"+bgKey+".jpg')";
-    bg.style.backgroundSize='cover'; bg.style.backgroundPosition='center';
+    // bg画像を mood色グラデの上に重ねる＝画像が未生成(404)でも濃いグラデが見える、在れば画像が乗る
+    const grad=MOOD[mood]||MOOD.default;
+    bg.style.backgroundColor='#000';
+    bg.style.backgroundImage="url('assets/bg/"+bgKey+".jpg'), "+grad;
+    bg.style.backgroundSize='cover, cover'; bg.style.backgroundPosition='center, center';
     const t=TINT[mood]||TINT.default;
     tint.style.background=VIGNETTE+', linear-gradient(0deg,'+t+','+t+')';
   } else {
@@ -233,7 +235,7 @@ let SCENE_ORDER = [];
 let curEp = 0;        // 現在の回番号
 let MANIFEST = [];    // 全120回の目次
 let node, nodeId, idx, currentSpeaker;
-let stage=[]; const stageEls={};
+let stage=[]; const stageEls={}; let lastSpriteChar=null;
 let auto=false, skip=false, skipTimer=null, autoTimer=null, hideUI=false, revealing=false, finishReveal=null, typeIv=null, history=[];
 let pages=[], pageIdx=0, curPrefix='', curText=null;
 const SPEEDS=[{n:'瞬間',ms:0},{n:'速',ms:14},{n:'中',ms:28},{n:'遅',ms:48}]; let speedIdx=0;
@@ -286,7 +288,7 @@ function say(name,text){
   E('text').classList.remove('narrate');
   history.push({name:name,text:text,nr:false});
   startLine('', text);
-  currentSpeaker=NAME2CHAR[name]||null; applySpotlight();
+  currentSpeaker=NAME2CHAR[name]||lastSpriteChar||null; applySpotlight();
 }
 function narrate(text){
   E('name').style.visibility='hidden';
@@ -400,6 +402,7 @@ function removeEl(ch){ const el=stageEls[ch]; if(!el) return; el.classList.remov
 function clearStage(){ Object.keys(stageEls).forEach(removeEl); stage=[]; }
 function showSprite(key){
   const ch=charKey(key); if(!ch) return;
+  lastSpriteChar=ch;
   const item=stage.find(s=>s.char===ch);
   if(item){ item.key=key; }
   else{

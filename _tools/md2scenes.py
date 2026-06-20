@@ -46,11 +46,16 @@ MOB_RULES=[
  (r'門番|番兵|兵|卒|軍士|小者|手の者','mob_heishi'),
  (r'将|督|尉|司馬|校尉|太守|刺史','mob_busho'),
 ]
-def resolve_sprite(name):
+def resolve_sprite(name, bg=None):
     if name in ROSTER: return ROSTER[name]
+    if '・' in name:                       # 連名は筆頭の人物に寄せる
+        first=name.split('・')[0]
+        if first in ROSTER: return ROSTER[first]
     for pat,key in MOB_RULES:
         if re.search(pat,name): return key
-    return None
+    # 顔無しゼロ＝場面のbgで文/武の既定モブを出す（流用OK）
+    if bg in ('bg_kyutei','bg_shitsunai','bg_toshi'): return 'mob_bunkan'
+    return 'mob_busho'
 # 背景アーキタイプ（~16枚で全120回。moodはCSS色補正で昼夜＝画像は増やさない）
 BG_RULES=[ # (キーワード正規表現, bgキー)
  (r'宮|殿|朝廷|帝|后|禁中|内裏|玉座','bg_kyutei'),
@@ -104,7 +109,8 @@ def convert(n):
     for ai,act in enumerate(acts):
         akey=f'act{ai+1:02d}'; order.append(akey); beats=[]
         firsttext=next((x for x in act['items'] if x.strip() and not x.startswith(('**','〔','---'))),'')
-        beats.append({'t':'bg','bg':bg_of(act['title'],firsttext),'mood':mood_of(act['title']+firsttext)})
+        actbg=bg_of(act['title'],firsttext)
+        beats.append({'t':'bg','bg':actbg,'mood':mood_of(act['title']+firsttext)})
         cur_sprite=None
         for raw in act['items']:
             s=raw.strip()
@@ -112,7 +118,7 @@ def convert(n):
             m=re.match(r'^\*\*(.+?)\*\*「(.*)」$', s)
             if m:
                 name=m.group(1); text=m.group(2)
-                key=resolve_sprite(name)
+                key=resolve_sprite(name, actbg)
                 if key and os.path.exists(f'{SPRITES}/{key}.png') and key!=cur_sprite:
                     beats.append({'t':'sprite','key':key}); cur_sprite=key
                 beats.append({'t':'say','name':name,'text':text})
