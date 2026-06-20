@@ -45,8 +45,9 @@
     border:1px solid rgba(184,146,60,.32); border-radius:14px;
     box-shadow:0 12px 46px rgba(0,0,0,.62), inset 0 1px 0 rgba(184,146,60,.12);
     cursor:pointer; display:flex; flex-direction:column; overflow:hidden;}
-  #name{align-self:flex-start; display:inline-block; font-size:clamp(13px,1.8vw,16px); font-weight:bold;
-    padding:3px 15px; margin-bottom:9px; border-radius:4px; color:#fff; letter-spacing:.08em; min-height:8px;}
+  #name{align-self:flex-start; display:inline-block; font-size:clamp(15px,2.3vw,20px); font-weight:bold;
+    padding:5px 18px; margin-bottom:10px; border-radius:5px; color:#fff; letter-spacing:.10em; min-height:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,.45); text-shadow:0 1px 2px rgba(0,0,0,.5); border-top:1px solid rgba(255,255,255,.18);}
   #text{font-size:clamp(16px,2.5vw,20px); line-height:1.78; color:var(--silk); text-shadow:0 1px 3px #000;
     overflow:hidden; min-height:0; flex:1 1 auto; padding-right:2px;
     white-space:pre-wrap; line-break:strict; word-break:normal; overflow-wrap:normal; letter-spacing:.02em;}
@@ -206,27 +207,21 @@ function setBg(bgKey, mood){
   }
 }
 // 名前タブの配色（関羽＝翡翠、敵味方を色で）
-const CHARMETA = {
-  '関羽':{c:'#fff',bg:'linear-gradient(180deg,#3E8E7E,#27604f)'},
-  '劉備':{c:'#fff',bg:'linear-gradient(180deg,#8a6d2a,#5a4418)'},
-  '張飛':{c:'#fff',bg:'linear-gradient(180deg,#4a3a33,#2e2420)'},
-  '曹操':{c:'#fff',bg:'linear-gradient(180deg,#5a5650,#36332f)'},
-  '張遼':{c:'#fff',bg:'linear-gradient(180deg,#46535f,#2c343c)'},
-  '顔良':{c:'#fff',bg:'linear-gradient(180deg,#6b3530,#43211e)'},
-  '諸葛亮':{c:'#fff',bg:'linear-gradient(180deg,#4e6356,#2f3d35)'},
-  '馬超':{c:'#fff',bg:'linear-gradient(180deg,#6a5240,#413327)'},
-  '于禁':{c:'#fff',bg:'linear-gradient(180deg,#54565a,#333538)'},
-  '龐徳':{c:'#fff',bg:'linear-gradient(180deg,#5a4a44,#372d29)'},
-  '呂蒙':{c:'#fff',bg:'linear-gradient(180deg,#3a4a5a,#242f3a)'},
-  '孫権':{c:'#fff',bg:'linear-gradient(180deg,#4a3a5a,#2d2438)'},
-  '関平':{c:'#fff',bg:'linear-gradient(180deg,#3E8E7E,#2a5e50)'},
-  '司馬懿':{c:'#fff',bg:'linear-gradient(180deg,#5a5650,#36332f)'},
-  '徐晃':{c:'#fff',bg:'linear-gradient(180deg,#5a5650,#36332f)'},
-  '糜芳':{c:'#fff',bg:'linear-gradient(180deg,#4a3a5a,#2d2438)'},
-  '孫権の使者':{c:'#fff',bg:'linear-gradient(180deg,#4a3a5a,#2d2438)'},
-  '使者':{c:'#fff',bg:'linear-gradient(180deg,#48433c,#2a2620)'},
-  '医者':{c:'#fff',bg:'linear-gradient(180deg,#48433c,#2a2620)'},
+// 名前タブ＝識別の主役。ロスターは陣営色、非ロスターは名前ハッシュで一意色（似た名前/同じモブ顔でもタブ色で判別）
+let FACTION={};  // faction.json から
+const FAC_COLOR={
+  '蜀':'linear-gradient(180deg,#3a8f6a,#1c5039)','魏':'linear-gradient(180deg,#3a6aa0,#1b3a5e)',
+  '呉':'linear-gradient(180deg,#b04a40,#6a241f)','晋':'linear-gradient(180deg,#6a4a8e,#3a2450)',
+  '漢':'linear-gradient(180deg,#b89540,#665018)','群雄':'linear-gradient(180deg,#856448,#473322)',
+  '異':'linear-gradient(180deg,#b06a34,#663a18)'
 };
+const FAC_TAG={'蜀':'蜀','魏':'魏','呉':'呉','晋':'晋','漢':'漢','群雄':'','異':'蛮'};
+const MINOR_PAL=['#3a6b6b','#46587e','#6b5a36','#7c3a48','#3a5e48','#5a3a6e','#6a4a38','#3a486e','#5c5a36','#724a4a','#3a6a5c','#565060','#5a4a6e','#496a44'];
+function tabBg(name){
+  const f=FACTION[name]; if(f&&FAC_COLOR[f]) return FAC_COLOR[f];
+  let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0;
+  const c=MINOR_PAL[h%MINOR_PAL.length]; return 'linear-gradient(180deg,'+c+','+c+'cc)';
+}
 let NAME2CHAR={};  // roster.json から init で投入（名→立ち絵base key の char部）
 
 const E = id=>document.getElementById(id);
@@ -283,8 +278,7 @@ function advance(){
   idx++; render();
 }
 function say(name,text){
-  const meta=CHARMETA[name]||{c:'#fff',bg:'rgba(60,50,40,.9)'};
-  const n=E('name'); n.textContent=name; n.style.background=meta.bg; n.style.color=meta.c; n.style.visibility='visible';
+  const n=E('name'); n.textContent=name; n.style.background=tabBg(name); n.style.color='#fff'; n.style.visibility='visible';
   E('text').classList.remove('narrate');
   history.push({name:name,text:text,nr:false});
   startLine('', text);
@@ -388,7 +382,7 @@ function openLog(){
 const LAYOUT_P={1:{x:[50],h:80},2:{x:[22,78],h:80},3:{x:[15,50,85],h:80}};
 function curLayout(){ return LAYOUT_P; }
 const STAGE_CAP=3;
-function charKey(k){ return k? String(k).split('_')[0] : null; }
+function charKey(k){ if(!k) return null; k=String(k); return k.startsWith('mob_')? k : k.split('_')[0]; }
 function ensureEl(ch){
   let el=stageEls[ch];
   if(!el){
@@ -494,6 +488,7 @@ E('hub-close').onclick=(e)=>{ e.stopPropagation(); E('hub').classList.remove('on
 fetch('scenes/manifest.json').then(r=>r.json()).then(m=>{ MANIFEST=m; buildHub();
   const h=(location.hash.match(/ep=(\d+)/)||[])[1]; if(h && +h>=1 && +h<=120){ E('title').style.display='none'; loadEpisode(+h); } }).catch(()=>{});
 fetch('scenes/roster.json').then(r=>r.json()).then(rs=>{ const o={}; for(const nm in rs){ o[nm]=String(rs[nm]).replace(/_(base|armor|late|old)$/,''); } NAME2CHAR=o; }).catch(()=>{});
+fetch('scenes/faction.json').then(r=>r.json()).then(f=>{ FACTION=f; }).catch(()=>{});
 E('restartbtn').onclick=(e)=>{ e.stopPropagation(); E('endcard').style.display='none'; E('title').style.display='flex'; };
 E('b-auto').onclick=e=>{ e.stopPropagation(); setAuto(!auto); };
 E('b-skip').onclick=e=>{ e.stopPropagation(); setSkip(!skip); };
