@@ -7,17 +7,50 @@ SPRITES=os.path.expanduser('~/sangokushi-engi-vn/assets/sprites')
 
 # 名 → 立ち絵キー（関羽伝13体を再利用＋ギャップは将来生成。ファイルが在る時だけスプライト発行＝無ければname-only）
 ROSTER={
+ # 関羽伝から流用（13体・生成不要）
  '曹操':'caocao_base','劉備':'liubei_base','関羽':'guanyu_base','張飛':'zhangfei_base',
  '諸葛亮':'zhugeliang_base','孫権':'sunquan_base','呂蒙':'lumeng_base','馬超':'machao_base',
  '張遼':'zhangliao_base','龐徳':'pangde_base','于禁':'yujin_base','顔良':'yanliang_base','関平':'guanping_base',
- # ギャップ（画像は後から増分。キーだけ予約）
- '司馬懿':'simayi_base','周瑜':'zhouyu_base','姜維':'jiangwei_base','魯肅':'lusu_base','趙雲':'zhaoyun_base',
- '袁紹':'yuanshao_base','董卓':'dongzhuo_base','呂布':'lvbu_base','王允':'wangyun_base','孫策':'sunce_base',
- '陳宮':'chengong_base','鄧艾':'dengai_base','魏延':'weiyan_base','曹丕':'caopi_base','曹叡':'caorui_base',
- '司馬昭':'simazhao_base','鍾会':'zhonghui_base','陸遜':'luxun_base','賈詡':'jiaxu_base','張郃':'zhanghe_base',
- '劉表':'liubiao_base','荀彧':'xunyu_base','黄忠':'huangzhong_base','献帝':'xiandi_base','劉禅':'liushan_base',
- '孫堅':'sunjian_base','貂蝉':'diaochan_base','孟獲':'menghuo_base','孫乾':'sunqian_base',
+ # 蜀
+ '趙雲':'zhaoyun_base','黄忠':'huangzhong_base','姜維':'jiangwei_base','龐統':'pangtong_base','魏延':'weiyan_base',
+ '法正':'fazheng_base','馬岱':'madai_base','厳顔':'yanyan_base','徐庶':'xushu_base','馬謖':'masu_base',
+ '関興':'guanxing_base','張苞':'zhangbao_base','劉禅':'liushan_base','黄月英':'yueying_base','関銀屏':'guanyinping_base',
+ '周倉':'zhoucang_base','廖化':'liaohua_base',
+ # 魏
+ '司馬懿':'simayi_base','夏侯惇':'xiahoudun_base','夏侯淵':'xiahouyuan_base','典韋':'dianwei_base','許褚':'xuchu_base',
+ '徐晃':'xuhuang_base','張郃':'zhanghe_base','郭嘉':'guojia_base','荀彧':'xunyu_base','賈詡':'jiaxu_base',
+ '曹仁':'caoren_base','曹丕':'caopi_base','曹叡':'caorui_base','司馬師':'simashi_base','司馬昭':'simazhao_base',
+ '鄧艾':'dengai_base','鍾会':'zhonghui_base','楽進':'yuejin_base','李典':'lidian_base','程昱':'chengyu_base',
+ '曹真':'caozhen_base','満寵':'manchong_base','荀攸':'xunyou_base','甄姫':'zhenji_base',
+ # 呉
+ '孫堅':'sunjian_base','孫策':'sunce_base','周瑜':'zhouyu_base','陸遜':'luxun_base','甘寧':'ganning_base',
+ '太史慈':'taishici_base','黄蓋':'huanggai_base','周泰':'zhoutai_base','凌統':'lingtong_base','丁奉':'dingfeng_base',
+ '韓当':'handang_base','程普':'chengpu_base','魯肅':'lusu_base','諸葛瑾':'zhugejin_base','孫尚香':'sunshangxiang_base',
+ '大喬':'daqiao_base','小喬':'xiaoqiao_base','朱然':'zhuran_base','徐盛':'xusheng_base','張昭':'zhangzhao_base',
+ # 群雄・晋
+ '呂布':'lvbu_base','貂蝉':'diaochan_base','董卓':'dongzhuo_base','袁紹':'yuanshao_base','袁術':'yuanshu_base',
+ '公孫瓚':'gongsunzan_base','張角':'zhangjiao_base','華雄':'huaxiong_base','文醜':'wenchou_base','陳宮':'chengong_base',
+ '王允':'wangyun_base','李儒':'liru_base','何進':'hejin_base','左慈':'zuoci_base','于吉':'yuji_base',
+ '高順':'gaoshun_base','張繡':'zhangxiu_base','孟獲':'menghuo_base','祝融':'zhurong_base','賈充':'jiachong_base',
+ '諸葛誕':'zhugedan_base','文鴦':'wenyang_base','献帝':'xiandi_base','劉表':'liubiao_base','孫乾':'sunqian_base',
 }
+# モブ（役割キーワード→汎用テンプレ。固有名の端役で立ち絵が無い時の演じ分け）
+MOB_RULES=[
+ (r'貂蝉|夫人|妃|后|姫|娘|女|侍女|婦','mob_josei'),
+ (r'老婆|媼|嫗','mob_roujo'),
+ (r'宦官|黄門|常侍','mob_kankan'),
+ (r'道士|方士|僧|仙|隠者|童子','mob_doshi'),
+ (r'賊|蛮|羌|胡|匈奴','mob_zoku'),
+ (r'使者|使い|伝令|早馬|飛報','mob_shisha'),
+ (r'百姓|農|民|商|樵','mob_shomin'),
+ (r'門番|番兵|兵|卒|軍士|小者|手の者','mob_heishi'),
+ (r'将|督|尉|司馬|校尉|太守|刺史','mob_busho'),
+]
+def resolve_sprite(name):
+    if name in ROSTER: return ROSTER[name]
+    for pat,key in MOB_RULES:
+        if re.search(pat,name): return key
+    return None
 # 背景アーキタイプ（~16枚で全120回。moodはCSS色補正で昼夜＝画像は増やさない）
 BG_RULES=[ # (キーワード正規表現, bgキー)
  (r'宮|殿|朝廷|帝|后|禁中|内裏|玉座','bg_kyutei'),
@@ -79,7 +112,7 @@ def convert(n):
             m=re.match(r'^\*\*(.+?)\*\*「(.*)」$', s)
             if m:
                 name=m.group(1); text=m.group(2)
-                key=ROSTER.get(name)
+                key=resolve_sprite(name)
                 if key and os.path.exists(f'{SPRITES}/{key}.png') and key!=cur_sprite:
                     beats.append({'t':'sprite','key':key}); cur_sprite=key
                 beats.append({'t':'say','name':name,'text':text})
