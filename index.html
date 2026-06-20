@@ -470,7 +470,7 @@ function buildHub(){
   }
 }
 function loadEpisode(n){
-  curEp=n;
+  curEp=n; try{ history.replaceState(null,'','#ep='+n); }catch(e){}
   const old=document.getElementById('epscript'); if(old) old.remove();
   const s=document.createElement('script'); s.id='epscript';
   s.src='scenes/scenes_'+String(n).padStart(3,'0')+'.js?v='+Date.now();
@@ -488,7 +488,8 @@ E('app').addEventListener('click',advance);
 document.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter') advance(); });
 E('startbtn').onclick=(e)=>{ e.stopPropagation(); openHub(); };
 E('hub-close').onclick=(e)=>{ e.stopPropagation(); E('hub').classList.remove('on'); E('title').style.display='flex'; };
-fetch('scenes/manifest.json').then(r=>r.json()).then(m=>{ MANIFEST=m; buildHub(); }).catch(()=>{});
+fetch('scenes/manifest.json').then(r=>r.json()).then(m=>{ MANIFEST=m; buildHub();
+  const h=(location.hash.match(/ep=(\d+)/)||[])[1]; if(h && +h>=1 && +h<=120){ E('title').style.display='none'; loadEpisode(+h); } }).catch(()=>{});
 fetch('scenes/roster.json').then(r=>r.json()).then(rs=>{ const o={}; for(const nm in rs){ o[nm]=String(rs[nm]).replace(/_(base|armor|late|old)$/,''); } NAME2CHAR=o; }).catch(()=>{});
 E('restartbtn').onclick=(e)=>{ e.stopPropagation(); E('endcard').style.display='none'; E('title').style.display='flex'; };
 E('b-auto').onclick=e=>{ e.stopPropagation(); setAuto(!auto); };
