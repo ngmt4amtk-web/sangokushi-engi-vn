@@ -5,14 +5,34 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="description" content="正史『三国志』蜀書六 關羽傳に基づく一本道ノベルゲーム。演義不使用。">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>三國演義 ─ 読み物版 全120回</title>
+<meta name="description" content="羅貫中『三国志演義』全120回を、報告調の地の文と会話の二層で読む一本道ノベルゲーム。桃園結義から三分帰晋まで。">
 <meta name="theme-color" content="#0E0B0A">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230E0B0A'/%3E%3Ctext x='32' y='46' font-size='44' text-anchor='middle' fill='%23B8923C' font-family='serif'%3E關%3C/text%3E%3C/svg%3E">
-<title>關羽 ─ 漢寿亭侯伝</title>
+<meta name="application-name" content="三國演義 読み物版">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="三國演義">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="canonical" href="https://ngmt4amtk-web.github.io/sangokushi-engi-vn/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="三國演義 読み物版">
+<meta property="og:title" content="三國演義 ─ 読み物版 全120回">
+<meta property="og:description" content="『三国志演義』全120回を、地の文と会話の二層で読む一本道ノベルゲーム。桃園結義から三分帰晋まで。">
+<meta property="og:image" content="https://ngmt4amtk-web.github.io/sangokushi-engi-vn/assets/ogp.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://ngmt4amtk-web.github.io/sangokushi-engi-vn/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="三國演義 ─ 読み物版 全120回">
+<meta name="twitter:description" content="『三国志演義』全120回を二層構成で読む一本道ノベルゲーム。">
+<meta name="twitter:image" content="https://ngmt4amtk-web.github.io/sangokushi-engi-vn/assets/ogp.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230E0B0A'/%3E%3Ctext x='32' y='47' font-size='42' text-anchor='middle' fill='%23B8923C' font-family='serif'%3E演%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
 <style>
   :root{ --black:#0E0B0A; --gold:#B8923C; --crimson:#9E2B25; --crimson2:#C8413B;
-    --silk:#E8DCC0; --ivory:#C9BFA8; --jade:#3E8E7E; }
+    --silk:#E8DCC0; --ivory:#C9BFA8; --jade:#3E8E7E; --fs:1; }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%; background:#000; overflow:hidden;
     font-family:"Hiragino Mincho ProN","Yu Mincho",serif; color:var(--silk);}
@@ -48,13 +68,14 @@
   #name{align-self:flex-start; display:inline-block; font-size:clamp(15px,2.3vw,20px); font-weight:bold;
     padding:5px 18px; margin-bottom:10px; border-radius:5px; color:#fff; letter-spacing:.10em; min-height:8px;
     box-shadow:0 2px 8px rgba(0,0,0,.45); text-shadow:0 1px 2px rgba(0,0,0,.5); border-top:1px solid rgba(255,255,255,.18);}
-  #text{font-size:clamp(16px,2.5vw,20px); line-height:1.78; color:var(--silk); text-shadow:0 1px 3px #000;
+  #text{font-size:calc(clamp(16px,2.5vw,20px) * var(--fs)); line-height:1.78; color:var(--silk); text-shadow:0 1px 3px #000;
     overflow:hidden; min-height:0; flex:1 1 auto; padding-right:2px;
     white-space:pre-wrap; line-break:strict; word-break:normal; overflow-wrap:normal; letter-spacing:.02em;}
-  #text.narrate{color:#aab6c9; font-style:italic; opacity:.96;}
+  #text.narrate{color:#c5cdda; font-style:italic;}
   #text .mark{color:var(--crimson2); margin-right:.4em;}
   #text.narrate .mark{color:#7d8ba3; font-style:normal;}
-  #next{display:none!important;}
+  #next{position:absolute; right:16px; bottom:6px; z-index:9; color:var(--gold); font-size:13px; opacity:.6; pointer-events:none; display:none; animation:nextpulse 1.3s ease-in-out infinite;}
+  @keyframes nextpulse{0%,100%{transform:translateY(0);opacity:.45;}50%{transform:translateY(2px);opacity:.8;}}
   #choices{position:absolute; inset:0; z-index:9; display:none;}
   #title,#endcard{position:absolute; inset:0; z-index:12; display:flex; flex-direction:column;
     justify-content:center; align-items:center; text-align:center;
@@ -116,7 +137,28 @@
 .eprow:active,.eprow:hover{background:rgba(201,162,75,.14);}
 .epn{flex:0 0 auto; font-size:13px; color:#C9A24B; min-width:64px;}
 .ept{flex:1; font-size:14px; color:#e8e2d6; line-height:1.45;}
+.epmark{flex:0 0 auto; font-size:12px; letter-spacing:0; margin-left:6px;}
+.epmark.done{color:#3a8f6a;} .epmark.reading{color:#C9A24B;}
+.eprow.done .ept{color:#9fb4a6;}
 #endnav .btn{margin:8px auto 0;}
+.btn.alt{border-color:rgba(184,146,60,.5); color:var(--silk); background:rgba(184,146,60,.04);}
+#toast{position:fixed; left:50%; bottom:18%; transform:translateX(-50%); z-index:30; max-width:84%;
+  background:rgba(12,9,7,.95); border:1px solid rgba(184,146,60,.5); color:var(--silk);
+  padding:12px 20px; border-radius:10px; font-size:14px; letter-spacing:.04em; opacity:0; pointer-events:none;
+  transition:opacity .3s ease; box-shadow:0 8px 28px rgba(0,0,0,.6);}
+#toast.on{opacity:1;}
+#hubbar{display:flex; justify-content:space-between; align-items:center; padding:6px 6px 2px; font-size:12px; color:rgba(232,220,192,.6);}
+#hubbar .clr{cursor:pointer; color:#C9A24B; padding:4px 8px; border:1px solid rgba(201,162,75,.35); border-radius:8px;}
+/* アクセシビリティ：フォーカス可視化・SR専用・モーション配慮・タップ領域 */
+.sr-only{position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;}
+[role="button"]:focus-visible, .hbtn:focus-visible, .mitem:focus-visible, .ovclose:focus-visible, .eprow:focus-visible, .btn:focus-visible{
+  outline:2px solid var(--gold); outline-offset:2px; border-radius:8px;}
+.hbtn{min-height:34px; display:flex; align-items:center; justify-content:center;}
+.factag{opacity:.75; font-size:.8em; margin-right:.35em; font-weight:normal;}
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ transition-duration:.01ms!important; animation-duration:.01ms!important; animation-iteration-count:1!important; }
+  #next{animation:none;}
+}
 </style>
 </head>
 <body>
@@ -130,46 +172,52 @@
   <div id="veil"></div>
   <div id="win">
     <span id="name"></span>
-    <div id="text"></div>
-    <span id="next">▼</span>
+    <div id="text" aria-hidden="true"></div>
+    <span id="next" aria-hidden="true">▼</span>
   </div>
   <div id="choices"></div>
 
-  <div id="hud">
-    <div class="hbtn" id="b-auto">AUTO</div>
-    <div class="hbtn" id="b-skip">SKIP</div>
-    <div class="hbtn" id="b-log">LOG</div>
-    <div class="hbtn" id="b-menu">☰</div>
+  <div id="hud" role="toolbar" aria-label="読書コントロール">
+    <div class="hbtn" id="b-auto" role="button" tabindex="0" aria-label="オート再生">AUTO</div>
+    <div class="hbtn" id="b-skip" role="button" tabindex="0" aria-label="スキップ">SKIP</div>
+    <div class="hbtn" id="b-log" role="button" tabindex="0" aria-label="バックログ">LOG</div>
+    <div class="hbtn" id="b-menu" role="button" tabindex="0" aria-label="メニュー">☰</div>
   </div>
-  <div id="log" class="overlay"><div class="ovpanel">
-    <div class="ovhead">ログ</div><div id="logbody"></div><div class="ovclose" id="log-close">閉じる</div>
+  <div id="sr" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="log" class="overlay" role="dialog" aria-modal="true" aria-label="バックログ"><div class="ovpanel">
+    <div class="ovhead">ログ</div><div id="logbody"></div><div class="ovclose" id="log-close" role="button" tabindex="0">閉じる</div>
   </div></div>
-  <div id="menu" class="overlay"><div class="ovpanel">
+  <div id="menu" class="overlay" role="dialog" aria-modal="true" aria-label="メニュー"><div class="ovpanel">
     <div class="ovhead">メニュー</div>
-    <div class="mitem" id="m-speed">文字速度：瞬間</div>
-    <div class="mitem" id="m-hide">ウインドウを隠す</div>
-    <div class="mitem" id="m-restart">最初から読む</div>
-    <div class="mitem" id="m-title">タイトルへ戻る</div>
-    <div class="ovclose" id="menu-close">閉じる</div>
+    <div class="mitem" id="m-speed" role="button" tabindex="0">文字速度：瞬間</div>
+    <div class="mitem" id="m-font" role="button" tabindex="0">文字サイズ：標準</div>
+    <div class="mitem" id="m-hide" role="button" tabindex="0">ウインドウを隠す</div>
+    <div class="mitem" id="m-hub" role="button" tabindex="0">目次へ</div>
+    <div class="mitem" id="m-restart" role="button" tabindex="0">この回を最初から</div>
+    <div class="mitem" id="m-title" role="button" tabindex="0">タイトルへ戻る</div>
+    <div class="ovclose" id="menu-close" role="button" tabindex="0">閉じる</div>
   </div></div>
 
   <div id="title">
     <div class="logo">三國演義</div>
     <div class="sub">読み物版・全120回</div>
     <div class="sub2">桃園結義より三分帰晋まで ／ 選択肢なしの一本道</div>
-    <div class="btn" id="startbtn">目次をひらく</div>
-    <div class="hint">報告調の復元ナレ＋会話の二層。全120回・1482幕。</div>
+    <div class="btn" id="continuebtn" role="button" tabindex="0" style="display:none;">続きから</div>
+    <div class="btn alt" id="startbtn" role="button" tabindex="0">目次をひらく</div>
+    <div class="hint">原典 羅貫中『三國演義』（PD）／訳・構成・実装 長又允希　─　全120回・1482幕</div>
   </div>
-  <div id="hub" class="overlay"><div class="ovpanel" id="hubpanel">
+  <div id="toast"></div>
+  <div id="hub" class="overlay" role="dialog" aria-modal="true" aria-label="目次"><div class="ovpanel" id="hubpanel">
     <div class="ovhead">目次 ── 三国志演義 全120回</div>
+    <div id="hubbar"><span id="hubprog">読了 0 / 120</span><span class="clr" id="hub-clear" role="button" tabindex="0">進捗を消す</span></div>
     <div id="hublist"></div>
-    <div class="ovclose" id="hub-close">タイトルへ</div>
+    <div class="ovclose" id="hub-close" role="button" tabindex="0">タイトルへ</div>
   </div></div>
   <div id="endcard">
     <div id="endtitle"></div>
     <div id="endname"></div>
     <div id="endbody"></div>
-    <div class="btn" id="restartbtn">タイトルへ</div>
+    <div class="btn" id="restartbtn" role="button" tabindex="0">タイトルへ</div>
   </div>
 </div>
 
@@ -234,13 +282,41 @@ let stage=[]; const stageEls={}; let lastSpriteChar=null;
 let auto=false, skip=false, skipTimer=null, autoTimer=null, hideUI=false, revealing=false, finishReveal=null, typeIv=null, history=[];
 let pages=[], pageIdx=0, curPrefix='', curText=null;
 const SPEEDS=[{n:'瞬間',ms:0},{n:'速',ms:14},{n:'中',ms:28},{n:'遅',ms:48}]; let speedIdx=0;
+const FONTS=[{n:'小',v:0.9},{n:'標準',v:1.0},{n:'大',v:1.15},{n:'特大',v:1.32}];
+
+// ── セーブ/設定/進捗（localStorage・一本道VNなのでオートセーブ＋続きから＋読了管理） ──
+const BUILD='20260621';                 // キャッシュ版数（更新時に上げる）
+const SKEY='sangokushi_engi_vn_v1';
+let SAVE={resume:null, settings:{speedIdx:0, fontScale:1}, progress:{}};
+function loadSave(){ try{ const j=JSON.parse(localStorage.getItem(SKEY)||'null');
+  if(j&&typeof j==='object'){ SAVE.resume=j.resume||null;
+    SAVE.settings=Object.assign({speedIdx:0,fontScale:1}, j.settings||{});
+    SAVE.progress=j.progress||{}; } }catch(e){} }
+function flushSave(){ try{ localStorage.setItem(SKEY, JSON.stringify(SAVE)); }catch(e){} }
+function persistPos(){ if(!node||!curEp) return;
+  SAVE.resume={ep:curEp, node:nodeId, idx:idx, pageIdx:pageIdx, ts:Date.now()}; flushSave(); }
+function markProgress(n,st){ if(!n) return; if(SAVE.progress[n]==='done'&&st!=='done') return;
+  SAVE.progress[n]=st; flushSave(); }
+function doneCount(){ return Object.keys(SAVE.progress).filter(k=>SAVE.progress[k]==='done').length; }
+function fontIdx(){ const v=(SAVE.settings.fontScale||1); const i=FONTS.findIndex(f=>Math.abs(f.v-v)<0.001); return i<0?1:i; }
+function setFontScale(v,save){ document.documentElement.style.setProperty('--fs',v);
+  SAVE.settings.fontScale=v; const mi=E('m-font'); if(mi) mi.textContent='文字サイズ：'+FONTS[fontIdx()].n;
+  if(save!==false){ flushSave(); } if(curText!=null) refit(); }
+function applySettings(){ speedIdx=SAVE.settings.speedIdx||0;
+  const ms=E('m-speed'); if(ms) ms.textContent='文字速度：'+SPEEDS[speedIdx].n;
+  setFontScale(SAVE.settings.fontScale||1,false); }
+function refreshContinue(){ const c=E('continuebtn'); if(!c) return;
+  if(SAVE.resume&&SAVE.resume.ep){ c.style.display='block'; c.textContent='続きから（第'+SAVE.resume.ep+'回）'; }
+  else c.style.display='none'; }
+let _toastT; function toast(msg){ const t=E('toast'); if(!t) return; t.textContent=msg; t.classList.add('on');
+  clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove('on'),2600); }
 
 function start(){
   clearStage(); currentSpeaker=null;
   setAuto(false); setSkip(false); setHideUI(false);
   if(autoTimer){clearTimeout(autoTimer); autoTimer=null;} clearInterval(typeIv); revealing=false;
   pages=[]; pageIdx=0; curText=null; history=[]; E('hud').classList.add('on');
-  E('menu').classList.remove('on'); E('log').classList.remove('on');
+  E('menu').classList.remove('on'); E('log').classList.remove('on'); E('hub').classList.remove('on');
   E('title').style.display='none'; E('endcard').style.display='none'; hideCg();
   go(SCENE_ORDER[0]);
 }
@@ -268,17 +344,22 @@ function render(){
 }
 function advance(){
   if(hideUI){ setHideUI(false); return; }
-  if(E('menu').classList.contains('on')||E('log').classList.contains('on')) return;
+  if(E('menu').classList.contains('on')||E('log').classList.contains('on')||E('hub').classList.contains('on')) return;
   if(E('title').style.display!=='none') return;
   if(E('endcard').style.display==='flex') return;
   if(!node) return;
+  // 本文をなぞって選択中はタップで送らない（誤送り防止）
+  const sel=window.getSelection&&window.getSelection();
+  if(sel && !sel.isCollapsed && String(sel).length>0 && E('win').contains(sel.anchorNode)) return;
   if(autoTimer){ clearTimeout(autoTimer); autoTimer=null; }
   if(revealing){ if(finishReveal) finishReveal(); return; }
   if(pageIdx < pages.length-1){ pageIdx++; typeLine(curPrefix, pages[pageIdx]); return; }
   idx++; render();
 }
 function say(name,text){
-  const n=E('name'); n.textContent=name; n.style.background=tabBg(name); n.style.color='#fff'; n.style.visibility='visible';
+  const n=E('name'); const fac=FACTION[name]; const tag=(fac&&FAC_TAG[fac])?FAC_TAG[fac]:'';
+  n.innerHTML=(tag?'<span class="factag">'+esc(tag)+'</span>':'')+esc(name);
+  n.style.background=tabBg(name); n.style.color='#fff'; n.style.visibility='visible';
   E('text').classList.remove('narrate');
   history.push({name:name,text:text,nr:false});
   startLine('', text);
@@ -357,6 +438,8 @@ function typeLine(prefix, text){
   typeIv=setInterval(()=>{ i++; span.textContent=text.slice(0,i); if(i>=text.length) finish(); }, ms);
 }
 function onLineDone(){
+  persistPos();
+  const sr=E('sr'); if(sr){ const last=history[history.length-1]||{}; sr.textContent=(last.name?last.name+'、':'')+((pages[pageIdx]||'').replace(/⁠/g,'')); }
   if(skip) return;
   if(auto){ const len=(E('text').textContent||'').length; autoTimer=setTimeout(advance, 700+len*42); }
 }
@@ -388,7 +471,7 @@ function ensureEl(ch){
   if(!el){
     E('stage').querySelectorAll('.sprite[data-char="'+ch+'"]').forEach(o=>{ if(o.parentNode) o.parentNode.removeChild(o); });
     el=document.createElement('div'); el.className='sprite'; el.dataset.char=ch;
-    el.appendChild(document.createElement('img')); E('stage').appendChild(el); stageEls[ch]=el; }
+    const im=document.createElement('img'); im.alt=''; el.appendChild(im); E('stage').appendChild(el); stageEls[ch]=el; }
   return el;
 }
 function removeEl(ch){ const el=stageEls[ch]; if(!el) return; el.classList.remove('show');
@@ -436,14 +519,31 @@ function doFx(fx){
 }
 function finale(){
   setAuto(false); setSkip(false); hideCg(); E('hud').classList.remove('on');
+  markProgress(curEp,'done');
+  // 読了したら「続きから」は次の回の頭に進める（最終回なら消す）
+  SAVE.resume = (curEp>=120) ? null : {ep:curEp+1, node:null, idx:0, pageIdx:0, ts:Date.now()};
+  flushSave(); refreshContinue();
   const m=MANIFEST[curEp-1]||{};
-  E('endtitle').textContent='第'+curEp+'回 了';
-  E('endname').textContent='';
-  E('endbody').textContent=(m.title||'');
   let nav=E('endnav'); if(!nav){ nav=document.createElement('div'); nav.id='endnav'; nav.style.marginTop='18px'; E('endcard').insertBefore(nav,E('restartbtn')); }
   nav.innerHTML='';
-  if(curEp<120){ const b=document.createElement('div'); b.className='btn'; b.textContent='次の回（第'+(curEp+1)+'回）へ'; b.onclick=(e)=>{e.stopPropagation(); E('endcard').style.display='none'; loadEpisode(curEp+1);}; nav.appendChild(b); }
-  const b2=document.createElement('div'); b2.className='btn'; b2.textContent='目次へ戻る'; b2.onclick=(e)=>{e.stopPropagation(); E('endcard').style.display='none'; openHub();}; nav.appendChild(b2);
+  if(curEp>=120){
+    E('endtitle').textContent='全 一二〇 回 読 破';
+    E('endname').textContent='三國演義 ─ 読み物版';
+    E('endbody').innerHTML='天下の大勢、分かれて久しければ必ず合し、合して久しければ必ず分かる。<br>'
+      +'桃園に結びし義より、三分の天下が一統に帰すまで――百二十回を、読み通された。<br><br>'
+      +'<span style="color:#C9A24B;letter-spacing:.2em;">読了 '+doneCount()+' / 120 回</span>'
+      +'<br><br><span style="font-size:11px;color:rgba(232,220,192,.5);line-height:1.7;">原典：羅貫中『三國演義』（パブリックドメイン）<br>現代語訳・構成・実装　長又允希</span>';
+  } else {
+    E('endtitle').textContent='第'+curEp+'回 了';
+    E('endname').textContent='';
+    E('endbody').textContent=(m.title||'');
+    const b=document.createElement('div'); b.className='btn'; b.textContent='次の回（第'+(curEp+1)+'回）へ';
+    b.setAttribute('role','button'); b.tabIndex=0;
+    b.onclick=(e)=>{e.stopPropagation(); E('endcard').style.display='none'; loadEpisode(curEp+1);}; nav.appendChild(b);
+  }
+  const b2=document.createElement('div'); b2.className='btn alt'; b2.textContent='目次へ戻る';
+  b2.setAttribute('role','button'); b2.tabIndex=0;
+  b2.onclick=(e)=>{e.stopPropagation(); E('endcard').style.display='none'; openHub();}; nav.appendChild(b2);
   E('endcard').style.display='flex';
 }
 // ── ハブ（回セレクト）＋ 動的ロード ──
@@ -459,50 +559,99 @@ function buildHub(){
     const h=document.createElement('div'); h.className='archead'; h.textContent=name; list.appendChild(h);
     for(let n=a;n<=b;n++){
       const m=MANIFEST[n-1]||{title:''};
-      const row=document.createElement('div'); row.className='eprow';
-      row.innerHTML='<span class="epn">第'+n+'回</span><span class="ept">'+esc((m.title||'').replace(/^第[一二三四五六七八九十百]+回[　 ]*/,''))+'</span>';
+      const st=SAVE.progress[n];
+      const mark = st==='done' ? '<span class="epmark done">✓ 読了</span>'
+                 : st==='reading' ? '<span class="epmark reading">読書中</span>' : '';
+      const ttl=(m.title||'').replace(/^第[一二三四五六七八九十百〇○]+回[　 ]*/,'');
+      const row=document.createElement('div'); row.className='eprow'+(st==='done'?' done':'');
+      row.setAttribute('role','button'); row.tabIndex=0;
+      row.setAttribute('aria-label','第'+n+'回 '+ttl+(st==='done'?'（読了済）':st==='reading'?'（読書中）':''));
+      row.innerHTML='<span class="epn">第'+n+'回</span><span class="ept">'+esc(ttl)+'</span>'+mark;
       row.onclick=(e)=>{ e.stopPropagation(); E('hub').classList.remove('on'); loadEpisode(n); };
       list.appendChild(row);
     }
   }
+  const hp=E('hubprog'); if(hp) hp.textContent='読了 '+doneCount()+' / 120';
 }
-function loadEpisode(n){
-  curEp=n; try{ history.replaceState(null,'','#ep='+n); }catch(e){}
+function loadEpisode(n, resumePos){
+  curEp=n; try{ window.history.replaceState(null,'','#ep='+n); }catch(e){}
+  markProgress(n,'reading'); refreshContinue();
   const old=document.getElementById('epscript'); if(old) old.remove();
   const s=document.createElement('script'); s.id='epscript';
-  s.src='scenes/scenes_'+String(n).padStart(3,'0')+'.js?v='+Date.now();
+  s.src='scenes/scenes_'+String(n).padStart(3,'0')+'.js?v='+BUILD;
   s.onload=()=>{ SCENES=window.SCENES||{}; SCENE_ORDER=(window.SCENE_ORDER&&window.SCENE_ORDER.length)?window.SCENE_ORDER:Object.keys(SCENES);
     // この回のアセット先読み
     const seen=new Set();
     for(const k in SCENES) for(const bt of SCENES[k]){ if(bt.t==='sprite'&&bt.key&&!seen.has(bt.key)){seen.add(bt.key); const i=new Image(); i.src='assets/sprites/'+bt.key+'.png';} if(bt.t==='bg'&&bt.bg){const i=new Image(); i.src='assets/bg/'+bt.bg+'.jpg';} }
-    start(); };
-  s.onerror=()=>{ alert('第'+n+'回の読み込みに失敗しました'); openHub(); };
+    if(resumePos && resumePos.node && SCENES[resumePos.node]) doResume(resumePos); else start(); };
+  s.onerror=()=>{ toast('第'+n+'回の読み込みに失敗しました。通信状況をご確認ください。'); openHub(); };
   document.body.appendChild(s);
+}
+// 保存位置へ復帰：幕頭からセットアップ（背景/立ち絵）だけ早送り再生し、保存ビート＝ページへ着地
+function doResume(pos){
+  clearStage(); currentSpeaker=null; setAuto(false); setSkip(false); setHideUI(false);
+  if(autoTimer){clearTimeout(autoTimer); autoTimer=null;} clearInterval(typeIv); revealing=false;
+  pages=[]; pageIdx=0; curText=null; history=[]; E('hud').classList.add('on');
+  E('menu').classList.remove('on'); E('log').classList.remove('on'); E('hub').classList.remove('on');
+  E('title').style.display='none'; E('endcard').style.display='none'; hideCg();
+  nodeId=pos.node; node=SCENES[nodeId];
+  if(!node){ return start(); }
+  const target=Math.min(Math.max(0,pos.idx|0), node.length-1);
+  for(let k=0;k<target;k++){ const s=node[k]; if(!s) continue;
+    if(s.t==='bg') setBg(s.bg,s.mood);
+    else if(s.t==='sprite') showSprite(s.key);
+    else if(s.t==='cg') showCg(s.cg);
+    else if(s.t==='hide') clearStage();
+    // fx は復帰時に再生しない（点滅回避）
+  }
+  idx=target; render();
+  if(pos.pageIdx>0 && pages.length>1){
+    pageIdx=Math.min(pos.pageIdx|0, pages.length-1);
+    const t=E('text'); t.innerHTML=curPrefix; const sp=document.createElement('span'); sp.textContent=pages[pageIdx]; t.appendChild(sp);
+    revealing=false; E('next').textContent=(pageIdx<pages.length-1)?'▽':'▼'; E('next').style.display='inline';
+  }
 }
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+loadSave(); applySettings(); refreshContinue();
 E('app').addEventListener('click',advance);
-document.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter') advance(); });
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ if(E('menu').classList.contains('on')){E('menu').classList.remove('on');return;}
+    if(E('log').classList.contains('on')){E('log').classList.remove('on');return;}
+    if(E('hub').classList.contains('on')){E('hub').classList.remove('on');E('title').style.display='flex';refreshContinue();return;} return; }
+  if(e.key===' '||e.key==='Enter'){
+    const ae=document.activeElement;
+    if(ae&&ae.getAttribute&&ae.getAttribute('role')==='button'){ e.preventDefault(); ae.click(); return; }
+    e.preventDefault(); advance();
+  }
+});
 E('startbtn').onclick=(e)=>{ e.stopPropagation(); openHub(); };
-E('hub-close').onclick=(e)=>{ e.stopPropagation(); E('hub').classList.remove('on'); E('title').style.display='flex'; };
+E('continuebtn').onclick=(e)=>{ e.stopPropagation(); if(SAVE.resume&&SAVE.resume.ep){ E('title').style.display='none'; loadEpisode(SAVE.resume.ep, SAVE.resume); } };
+E('hub-close').onclick=(e)=>{ e.stopPropagation(); E('hub').classList.remove('on'); E('title').style.display='flex'; refreshContinue(); };
+E('hub-clear').onclick=(e)=>{ e.stopPropagation(); if(confirm('読了の記録と「続きから」を消去します。よろしいですか？')){ SAVE.resume=null; SAVE.progress={}; flushSave(); buildHub(); refreshContinue(); toast('進捗を消去しました'); } };
 fetch('scenes/manifest.json').then(r=>r.json()).then(m=>{ MANIFEST=m; buildHub();
-  const h=(location.hash.match(/ep=(\d+)/)||[])[1]; if(h && +h>=1 && +h<=120){ E('title').style.display='none'; loadEpisode(+h); } }).catch(()=>{});
+  const h=(location.hash.match(/ep=(\d+)/)||[])[1]; if(h && +h>=1 && +h<=120){ E('title').style.display='none'; loadEpisode(+h); } })
+  .catch(()=>{ MANIFEST=[]; buildHub(); toast('目次データの取得に失敗しました（オフラインの可能性）'); });
 fetch('scenes/roster.json').then(r=>r.json()).then(rs=>{ const o={}; for(const nm in rs){ o[nm]=String(rs[nm]).replace(/_(base|armor|late|old)$/,''); } NAME2CHAR=o; }).catch(()=>{});
 fetch('scenes/faction.json').then(r=>r.json()).then(f=>{ FACTION=f; }).catch(()=>{});
-E('restartbtn').onclick=(e)=>{ e.stopPropagation(); E('endcard').style.display='none'; E('title').style.display='flex'; };
+E('restartbtn').onclick=(e)=>{ e.stopPropagation(); E('endcard').style.display='none'; E('title').style.display='flex'; refreshContinue(); };
 E('b-auto').onclick=e=>{ e.stopPropagation(); setAuto(!auto); };
 E('b-skip').onclick=e=>{ e.stopPropagation(); setSkip(!skip); };
 E('b-log').onclick=e=>{ e.stopPropagation(); openLog(); };
 E('b-menu').onclick=e=>{ e.stopPropagation(); E('menu').classList.add('on'); };
 E('log-close').onclick=e=>{ e.stopPropagation(); E('log').classList.remove('on'); };
 E('menu-close').onclick=e=>{ e.stopPropagation(); E('menu').classList.remove('on'); };
-E('m-speed').onclick=e=>{ e.stopPropagation(); speedIdx=(speedIdx+1)%SPEEDS.length; E('m-speed').textContent='文字速度：'+SPEEDS[speedIdx].n; };
+E('m-speed').onclick=e=>{ e.stopPropagation(); speedIdx=(speedIdx+1)%SPEEDS.length; E('m-speed').textContent='文字速度：'+SPEEDS[speedIdx].n; SAVE.settings.speedIdx=speedIdx; flushSave(); };
+E('m-font').onclick=e=>{ e.stopPropagation(); const ni=(fontIdx()+1)%FONTS.length; setFontScale(FONTS[ni].v, true); };
+E('m-hub').onclick=e=>{ e.stopPropagation(); E('menu').classList.remove('on'); openHub(); };
 E('m-hide').onclick=e=>{ e.stopPropagation(); E('menu').classList.remove('on'); setHideUI(true); };
 E('m-restart').onclick=e=>{ e.stopPropagation(); E('menu').classList.remove('on'); start(); };
 E('m-title').onclick=e=>{ e.stopPropagation(); E('menu').classList.remove('on'); E('log').classList.remove('on');
   setAuto(false); setSkip(false); E('hud').classList.remove('on');
-  E('endcard').style.display='none'; E('title').style.display='flex'; };
+  clearInterval(typeIv); if(autoTimer){clearTimeout(autoTimer); autoTimer=null;} clearStage(); revealing=false; curText=null; node=null;
+  E('endcard').style.display='none'; E('title').style.display='flex'; refreshContinue(); };
 ['log','menu'].forEach(id=>{ E(id).onclick=e=>{ e.stopPropagation(); if(e.target===E(id)) E(id).classList.remove('on'); }; });
+E('hub').addEventListener('click',e=>{ if(e.target===E('hub')){ E('hub').classList.remove('on'); E('title').style.display='flex'; refreshContinue(); } });
 let _rezT; window.addEventListener('resize', ()=>{ clearTimeout(_rezT); _rezT=setTimeout(refit,160); });
 (function preloadAll(){
   try{
@@ -517,6 +666,8 @@ let _rezT; window.addEventListener('resize', ()=>{ clearTimeout(_rezT); _rezT=se
     cgs.forEach(k=>{ const i=new Image(); i.src='assets/cg/'+k+'.jpg'; });
   }catch(_){}
 })();
+// PWA: オフライン読書のためのサービスワーカー登録（失敗は黙殺）
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
 </script>
 </body>
 </html>

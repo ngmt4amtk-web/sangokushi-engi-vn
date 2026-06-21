@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # 読み物版 第NNN回.md → scenes_NNN.js（決定論変換）。roster.json/bg規則はデータ駆動。
+# 2026-06-21 監査改善: 挿絵スキップ強化 / ト書き・心内独白の話者解決 / 括弧深度を見た文分割 /
+#                      幕全文からのmood優勢判定 / 死の幕末fx / 別名で死蔵立ち絵を救済 / パス堅牢化。
 import re, json, sys, os
 
-YOMI='/Users/ngmt.mtk/Shortcuts/三国志演義_読み物版'
-SPRITES=os.path.expanduser('~/sangokushi-engi-vn/assets/sprites')
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+YOMI = os.environ.get('SANGOKUSHI_YOMI', '/Users/ngmt.mtk/Shortcuts/三国志演義_読み物版')
+SPRITES = os.path.join(REPO, 'assets', 'sprites')
+OUT = os.path.join(REPO, 'scenes')
 
 # 名 → 立ち絵キー（関羽伝13体を再利用＋ギャップは将来生成。ファイルが在る時だけスプライト発行＝無ければname-only）
 ROSTER={
@@ -33,6 +37,8 @@ ROSTER={
  '王允':'wangyun_base','李儒':'liru_base','何進':'hejin_base','左慈':'zuoci_base','于吉':'yuji_base',
  '高順':'gaoshun_base','張繡':'zhangxiu_base','孟獲':'menghuo_base','祝融':'zhurong_base','賈充':'jiachong_base',
  '諸葛誕':'zhugedan_base','文鴦':'wenyang_base','献帝':'xiandi_base','劉表':'liubiao_base','孫乾':'sunqian_base',
+ # 別名（原典が称号/通称で呼ぶため死蔵していた立ち絵を救済）
+ '孫夫人':'sunshangxiang_base','祝融夫人':'zhurong_base',
 }
 # モブ（役割キーワード→汎用テンプレ。固有名の端役で立ち絵が無い時の演じ分け）
 MOB_RULES=[
@@ -40,13 +46,16 @@ MOB_RULES=[
  (r'老婆|媼|嫗|母','mob_roujo'),
  (r'宦官|黄門|常侍','mob_kankan'),
  (r'道士|方士|僧|仙|隠者|童子','mob_doshi'),
- (r'賊|蛮|羌|胡|匈奴','mob_zoku'),
+ (r'賊|蛮|羌|匈奴|胡人|胡兵|羯|氐','mob_zoku'),   # 胡/民/農/商の裸一致を避け実在武将(胡遵・曹安民等)の誤分類を防ぐ
  (r'使者|使い|伝令|早馬|飛報','mob_shisha'),
- (r'百姓|農|民|商|樵','mob_shomin'),
+ (r'百姓|農夫|農民|庶民|商人|樵夫|村人|町人','mob_shomin'),
  (r'門番|番兵|兵|卒|軍士|小者|手の者','mob_heishi'),
  (r'将|督|尉|司馬|校尉|太守|刺史','mob_busho'),
 ]
-def resolve_sprite(name, bg=None):
+def resolve_sprite(name, bg=None, ep=None):
+    # 関羽は晩年(麦城〜玉泉山＝死と顕聖)で晩年立ち絵に切替（死蔵差分の活用）
+    if name=='関羽' and ep is not None and ep>=76 and os.path.exists(f'{SPRITES}/guanyu_late.png'):
+        return 'guanyu_late'
     if name in ROSTER: return ROSTER[name]
     if '・' in name:                       # 連名は筆頭の人物に寄せる
         first=name.split('・')[0]
@@ -67,22 +76,40 @@ BG_RULES=[ # (キーワード正規表現, bgキー)
  (r'書|室|帳|帷|閨|奥','bg_shitsunai'),
 ]
 BG_DEFAULT='bg_jin'  # 陣営/野外の汎用
-def mood_of(t):
-    if re.search(r'夜|宵|更|燭|月',t): return 'night'
-    if re.search(r'夜明け|暁|払暁|朝|曙',t): return 'dawn'
-    if re.search(r'夕|暮|黄昏',t): return 'dusk'
-    if re.search(r'雨|嵐|風|雷|水攻|大水',t): return 'storm'
-    if re.search(r'秋|寒|雪|冬',t): return 'cool'
-    return 'warm'
+
+# mood＝時刻/天候の色補正。幕全文を走査し優勢な気配を頻度で採る（warm偏重の是正）。
+# 旧版の「朝→朝廷」「月→正月」「風→そよ風」等の誤検出を語彙で排除。
+MOOD_KW={
+ 'night': r'夜陰|夜襲|夜討|夜半|深夜|宵闇|宵|夜更け|更ける|灯火|篝火|篝|燭|月明|月光|月夜|寝静|寝所|夜',
+ 'dawn':  r'夜明け|暁|払暁|曙|黎明|鶏鳴|東の空が白',
+ 'dusk':  r'夕暮|日暮れ|黄昏|夕陽|夕日|落日|残照|夕',
+ 'storm': r'大雨|長雨|豪雨|雨|嵐|雷|大水|洪水|水攻|霧|烈風|暴風|吹雪',
+ 'cool':  r'大雪|雪|氷|霜|凍|厳寒|寒風|秋風|冬',
+}
+def mood_of(text):
+    best='warm'; bestc=0
+    for mood,pat in MOOD_KW.items():
+        c=len(re.findall(pat,text))
+        if c>bestc: bestc=c; best=mood
+    return best
 def bg_of(title, firsttext):
     s=title+' '+firsttext
     for pat,key in BG_RULES:
         if re.search(pat,s): return key
     return BG_DEFAULT
 
+_OPEN='「『（〔【'; _CLOSE='」』）〕】'
 def split_sentences(p):
-    # 1ビート1〜2文。句点で割り、2文ずつまとめる（オーバーフロー回避）
-    parts=re.findall(r'[^。！？]*[。！？]', p) or [p]
+    # 1ビート1〜2文。句点で割るが、括弧/引用の内側(depth>0)では割らない＝詔・書状・台詞の途中改行を防ぐ。
+    parts=[]; buf=''; depth=0
+    for ch in p:
+        buf+=ch
+        if ch in _OPEN: depth+=1
+        elif ch in _CLOSE:
+            if depth>0: depth-=1
+        elif ch in '。！？' and depth==0:
+            parts.append(buf); buf=''
+    if buf.strip(): parts.append(buf)
     parts=[x.strip() for x in parts if x.strip()]
     out=[]; i=0
     while i<len(parts):
@@ -91,6 +118,50 @@ def split_sentences(p):
             chunk=parts[i]+parts[i+1]; i+=2
         else: i+=1
         out.append(chunk)
+    return out
+
+# 話者行の解析：**名**「台詞」 / **名**（ト書き）「台詞」 / **名**（心内独白）の3形態。
+_SAY_HEAD=re.compile(r'^\*\*(.+?)\*\*(.*)$')
+_STAGE=re.compile(r'^([（(][^「」]*?[)）])\s*(.*)$')
+_QUOTE=re.compile(r'^「(.*)」$')
+_PAREN_ONLY=re.compile(r'^[（(].*[)）]$')
+def parse_say(s):
+    m=_SAY_HEAD.match(s)
+    if not m: return None
+    name=m.group(1).strip(); rest=m.group(2).strip()
+    if not name: return None
+    stage=''
+    sm=_STAGE.match(rest)
+    if sm and '「' in sm.group(2):        # ト書き＋台詞
+        stage=sm.group(1); rest=sm.group(2).strip()
+    qm=_QUOTE.match(rest)
+    if qm:
+        return name, (stage+qm.group(1)) if stage else qm.group(1)
+    if _PAREN_ONLY.match(rest):           # 心内独白（鉤括弧なし・全文が括弧）
+        return name, rest
+    return None                            # 台詞でない＝地の文として扱う
+
+# 幕末が誰かの死で閉じる時だけ静かな暗転(fade)を1つ添える（保守的・ストロボ化回避）。
+_DEATH=re.compile(r'息絶え|事切れ|こと切れ|絶命|落命|薨去|薨じ|崩御|身罷|世を去っ|自刎|自害|刎ねて|斃れ|討ち死に|戦死|陣没|みまかっ')
+_KILL=re.compile(r'斬り捨て|斬って捨て|一刀のもとに|一刀の下に|首を刎ね|首を斬|討ち取った|突き伏せ|刺し殺|斬り落と|真っ二つ|斬り伏せ')  # 戦場の見せ場に閃光fxを1幕1回だけ
+_INSET=re.compile(r'^[〔［【]?挿絵')   # 〔挿絵〕も〔挿絵：…〕も（裸の挿絵も）全てスキップ
+_QOPEN=re.compile(r'^\*\*[^*]+\*\*(?:[（(][^「」]*[)）])?「')  # 話者が鉤括弧を開く行
+
+def merge_multiline_quotes(items):
+    # 複数段落にまたがる長台詞（例ep57諸葛亮の弔辞）を1行に結合し、話者属性を保つ
+    out=[]; i=0; n=len(items)
+    while i<n:
+        st=items[i].strip()
+        if _QOPEN.match(st) and st.count('「')>st.count('」'):
+            buf=st; j=i+1
+            while j<n and buf.count('「')>buf.count('」'):
+                nxt=items[j].strip()
+                if nxt and nxt!='---' and not _INSET.match(nxt.lstrip('〔［【')):
+                    buf+=nxt
+                j+=1
+            out.append(buf); i=j
+        else:
+            out.append(items[i]); i+=1
     return out
 
 def convert(n):
@@ -108,32 +179,40 @@ def convert(n):
     order=[]; scenes={}
     for ai,act in enumerate(acts):
         akey=f'act{ai+1:02d}'; order.append(akey); beats=[]
-        firsttext=next((x for x in act['items'] if x.strip() and not x.startswith(('**','〔','---'))),'')
+        items=merge_multiline_quotes(act['items'])
+        firsttext=next((x for x in items if x.strip() and not x.startswith(('**','〔','［','【','---'))),'')
         actbg=bg_of(act['title'],firsttext)
-        beats.append({'t':'bg','bg':actbg,'mood':mood_of(act['title']+firsttext)})
-        cur_sprite=None
-        for raw in act['items']:
+        # moodは幕の全文(地の文)から優勢気配を採る
+        acttext=act['title']+' '+' '.join(x for x in items if not x.lstrip().startswith(('**','〔','［','【','---')))
+        beats.append({'t':'bg','bg':actbg,'mood':mood_of(acttext)})
+        cur_sprite=None; flashed=False
+        for raw in items:
             s=raw.strip()
-            if not s or s=='---' or s=='〔挿絵〕': continue
-            m=re.match(r'^\*\*(.+?)\*\*「(.*)」$', s)
-            if m:
-                name=m.group(1); text=m.group(2)
-                key=resolve_sprite(name, actbg)
+            if not s or s=='---': continue
+            if _INSET.match(s.lstrip('〔［【')) or s.startswith(('〔挿絵','［挿絵','【挿絵')): continue
+            parsed=parse_say(s)
+            if parsed:
+                name,text=parsed
+                key=resolve_sprite(name, actbg, n)
                 if key and os.path.exists(f'{SPRITES}/{key}.png') and key!=cur_sprite:
                     beats.append({'t':'sprite','key':key}); cur_sprite=key
                 beats.append({'t':'say','name':name,'text':text})
             else:
                 for sent in split_sentences(s):
+                    if actbg=='bg_senjo' and not flashed and _KILL.search(sent):
+                        beats.append({'t':'fx','fx':'flash'}); flashed=True
                     beats.append({'t':'narrate','text':sent})
+        # 幕末が死で閉じるなら静かな暗転
+        if beats and beats[-1].get('t')=='narrate' and _DEATH.search(beats[-1].get('text','')):
+            beats.append({'t':'fx','fx':'fade'})
         scenes[akey]=beats
     return title, order, scenes
 
-OUT=os.path.expanduser('~/sangokushi-engi-vn/scenes')
 if __name__=='__main__':
-    if sys.argv[1]=='all':
+    if len(sys.argv)>1 and sys.argv[1]=='all':
         os.makedirs(OUT,exist_ok=True)
         manifest=[]; tot_b=0
-        from collections import Counter; C=Counter()
+        from collections import Counter; C=Counter(); M=Counter()
         for n in range(1,121):
             title,order,scenes=convert(n)
             js=('window.SCENE_ORDER='+json.dumps(order)+';\n'
@@ -142,14 +221,19 @@ if __name__=='__main__':
             open(f'{OUT}/scenes_{n:03d}.js','w',encoding='utf-8').write(js)
             b=sum(len(v) for v in scenes.values()); tot_b+=b
             for v in scenes.values():
-                for bt in v: C[bt['t']]+=1
+                for bt in v:
+                    C[bt['t']]+=1
+                    if bt['t']=='bg': M[bt.get('mood')]+=1
             manifest.append({'n':n,'title':title,'acts':len(order),'beats':b})
         json.dump(manifest,open(f'{OUT}/manifest.json','w',encoding='utf-8'),ensure_ascii=False,indent=1)
         # roster.json = 名→立ち絵base key（エンジンのネームタブ/スポットライトの単一真実源）
         json.dump(ROSTER,open(f'{OUT}/roster.json','w',encoding='utf-8'),ensure_ascii=False,indent=1)
         print(f'全120回書き出し完了 → {OUT}/scenes_001..120.js')
         print(f'総ビート={tot_b}  種別={dict(C)}')
-    else:
+        print(f'mood分布={dict(M)}')
+    elif len(sys.argv)>1:
         n=int(sys.argv[1])
         title,order,scenes=convert(n)
         print(f'第{n}回「{title}」幕={len(order)} ビート={sum(len(v) for v in scenes.values())}')
+    else:
+        print('usage: md2scenes.py [all|N]')
