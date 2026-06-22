@@ -21,5 +21,8 @@ out={}
 for f,names in FAC.items():
     for n in names.split():
         out.setdefault(n, f)   # 先勝ち（万一の重複時も最初の陣営を保持）
+# 増補2の未収録ぶんを補完（帰属が明確な者のみ・寝返り/中立は除外しハッシュ色に任せる）
+for n,f in {'楊儀':'蜀','秦宓':'蜀','管輅':'魏','許芝':'魏','張温':'呉','李粛':'群雄'}.items():
+    out.setdefault(n, f)
 json.dump(out, open(os.path.join(REPO,'scenes','faction.json'),'w',encoding='utf-8'), ensure_ascii=False, indent=0)
 print(f'faction.json: {len(out)}人を陣営付与')

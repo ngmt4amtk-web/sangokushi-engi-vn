@@ -46,6 +46,10 @@ ROSTER={
  '馬騰':'mateng_base','蔣幹':'jianggan_base','許攸':'xuyou_base','呉国太':'wuguotai_base','夏侯霸':'xiahouba_base',
  '韓遂':'hansui_base','郭図':'guotu_base','王平':'wangping_base','鄧芝':'dengzhi_base','糜竺':'mizhu_base',
  '馬良':'maliang_base','審配':'shenpei_base','劉琦':'liuqi_base','司馬炎':'simayan_base','陶謙':'taoqian_base',
+ # 増補2(2026-06-22・頻出の名前付き端役を昇格＝モブ衝突を源で減らす。PNG投入で自動昇格)
+ '孟達':'mengda_base','田豊':'tianfeng_base','楊儀':'yangyi_base','華佗':'huatuo_base','管輅':'guanlu_base',
+ '李粛':'lisu_base','秦宓':'qinmi_base','顧雍':'guyong_base','郭汜':'guosi_base','張温':'zhangwen_base',
+ '吉平':'jiping_base','許芝':'xuzhi_base',
 }
 # モブ（役割キーワード→汎用テンプレ。固有名の端役で立ち絵が無い時の演じ分け）
 MOB_RULES=[
@@ -59,8 +63,8 @@ MOB_RULES=[
  (r'門番|番兵|兵|卒|軍士|小者|手の者','mob_heishi'),
  (r'将|督|尉|司馬|校尉|太守|刺史','mob_busho'),
 ]
-MARTIAL_POOL=['mob_busho','mob_busho_young','mob_busho_old']  # 顔なし武将は名前ハッシュで顔を散らす（死蔵の老/若を活用）
-CIVIL_POOL=['mob_bunkan','mob_bunkan_young','mob_bunkan_old']
+MARTIAL_POOL=['mob_busho','mob_busho_young','mob_busho_old','mob_busho_b','mob_busho_c','mob_busho_d']  # 顔なし武将。場面内の登場順で別パターンを割当（_b/_c/_dは生成後に自動で使われる）
+CIVIL_POOL=['mob_bunkan','mob_bunkan_young','mob_bunkan_old','mob_bunkan_b','mob_bunkan_c','mob_bunkan_d']
 def _exists(k): return bool(k) and os.path.exists(f'{SPRITES}/{k}.png')
 def _namehash(name):
     h=0
@@ -205,7 +209,7 @@ def convert(n):
         # moodは幕の全文(地の文)から優勢気配を採る
         acttext=act['title']+' '+' '.join(x for x in items if not x.lstrip().startswith(('**','〔','［','【','---')))
         beats.append({'t':'bg','bg':actbg,'mood':mood_of(acttext)})
-        cur_sprite=None; flashed=False; last_say_name=None
+        cur_sprite=None; flashed=False; last_say_name=None; mob_assign={}; mob_ctr={'m':0,'c':0}
         for raw in items:
             s=raw.strip()
             if not s or s=='---': continue
@@ -214,11 +218,13 @@ def convert(n):
             if parsed:
                 name,text=parsed
                 key=resolve_sprite(name, actbg, n)
-                # 立ち絵無し武将同士の会話：直前と別人なのに同じモブ顔になるなら別バリアントへ（同顔が並ぶのを防ぐ）
-                if name!=last_say_name and key==cur_sprite and key and key.startswith(('mob_busho','mob_bunkan')):
-                    pool=MARTIAL_POOL if key.startswith('mob_busho') else CIVIL_POOL
-                    alts=[k for k in pool if _exists(k) and k!=cur_sprite]
-                    if alts: key=alts[_namehash(name)%len(alts)]
+                # 立ち絵無しの武将/文官は「場面内の登場順」で別パターンを割当＝同種別人を確実に描き分け（場面内で一意・名前タブ色と二重の手掛かり）
+                if key and (key.startswith('mob_busho') or key.startswith('mob_bunkan')):
+                    tp='m' if key.startswith('mob_busho') else 'c'
+                    pool=MARTIAL_POOL if tp=='m' else CIVIL_POOL
+                    avail=[k for k in pool if _exists(k)] or [pool[0]]
+                    if name in mob_assign: key=mob_assign[name]
+                    else: key=avail[mob_ctr[tp]%len(avail)]; mob_ctr[tp]+=1; mob_assign[name]=key
                 if key and os.path.exists(f'{SPRITES}/{key}.png') and key!=cur_sprite:
                     beats.append({'t':'sprite','key':key}); cur_sprite=key
                 beats.append({'t':'say','name':name,'text':text}); last_say_name=name
