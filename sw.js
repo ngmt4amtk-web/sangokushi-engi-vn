@@ -1,6 +1,6 @@
 // 三國演義 読み物版 ─ オフライン読書用サービスワーカー
 // HTML/JSON はnetwork-first（再デプロイを即反映）、不変アセット(画像/版数付きscenes)はcache-first（高速・オフライン）。
-const V = 'sangokushi-engi-v20260621b';
+const V = 'sangokushi-engi-v20260622';
 const CORE = [
   './', './index.html', './manifest.webmanifest',
   './scenes/manifest.json', './scenes/roster.json', './scenes/faction.json',

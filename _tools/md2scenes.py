@@ -38,7 +38,14 @@ ROSTER={
  '高順':'gaoshun_base','張繡':'zhangxiu_base','孟獲':'menghuo_base','祝融':'zhurong_base','賈充':'jiachong_base',
  '諸葛誕':'zhugedan_base','文鴦':'wenyang_base','献帝':'xiandi_base','劉表':'liubiao_base','孫乾':'sunqian_base',
  # 別名（原典が称号/通称で呼ぶため死蔵していた立ち絵を救済）
- '孫夫人':'sunshangxiang_base','祝融夫人':'zhurong_base',
+ '孫夫人':'sunshangxiang_base','祝融夫人':'zhurong_base','単福':'xushu_base','元直':'xushu_base',
+ # 増補（2026-06-22・頻出の顔なし武将に立ち絵を追加。画像指示_codex.md「増補」節で生成→PNG投入で自動昇格。それまでは固有モブ顔にフォールバック）
+ '董承':'dongcheng_base','張松':'zhangsong_base','劉璋':'liuzhang_base','郭淮':'guohuai_base','李傕':'lijue_base',
+ '陳登':'chendeng_base','闞澤':'kanze_base','華歆':'huaxin_base','司馬徽':'simahui_base','蔡瑁':'caimao_base',
+ '孔融':'kongrong_base','楊脩':'yangxiu_base','費禕':'feiyi_base','劉曄':'liuye_base','曹洪':'caohong_base',
+ '馬騰':'mateng_base','蔣幹':'jianggan_base','許攸':'xuyou_base','呉国太':'wuguotai_base','夏侯霸':'xiahouba_base',
+ '韓遂':'hansui_base','郭図':'guotu_base','王平':'wangping_base','鄧芝':'dengzhi_base','糜竺':'mizhu_base',
+ '馬良':'maliang_base','審配':'shenpei_base','劉琦':'liuqi_base','司馬炎':'simayan_base','陶謙':'taoqian_base',
 }
 # モブ（役割キーワード→汎用テンプレ。固有名の端役で立ち絵が無い時の演じ分け）
 MOB_RULES=[
@@ -52,19 +59,32 @@ MOB_RULES=[
  (r'門番|番兵|兵|卒|軍士|小者|手の者','mob_heishi'),
  (r'将|督|尉|司馬|校尉|太守|刺史','mob_busho'),
 ]
+MARTIAL_POOL=['mob_busho','mob_busho_young','mob_busho_old']  # 顔なし武将は名前ハッシュで顔を散らす（死蔵の老/若を活用）
+CIVIL_POOL=['mob_bunkan','mob_bunkan_young','mob_bunkan_old']
+def _exists(k): return bool(k) and os.path.exists(f'{SPRITES}/{k}.png')
+def _namehash(name):
+    h=0
+    for c in name: h=(h*31+ord(c))&0xffffffff
+    return h
+def _pick(name, pool):
+    avail=[k for k in pool if _exists(k)] or [pool[0]]
+    return avail[_namehash(name)%len(avail)]
 def resolve_sprite(name, bg=None, ep=None):
     # 関羽は晩年(麦城〜玉泉山＝死と顕聖)で晩年立ち絵に切替（死蔵差分の活用）
-    if name=='関羽' and ep is not None and ep>=76 and os.path.exists(f'{SPRITES}/guanyu_late.png'):
+    if name=='関羽' and ep is not None and ep>=76 and _exists('guanyu_late'):
         return 'guanyu_late'
-    if name in ROSTER: return ROSTER[name]
+    if name in ROSTER and _exists(ROSTER[name]):   # 立ち絵が在る時だけ採用。無ければモブへフォールバック＝先行配線を安全に（PNG投入で自動昇格）
+        return ROSTER[name]
     if '・' in name:                       # 連名は筆頭の人物に寄せる
         first=name.split('・')[0]
-        if first in ROSTER: return ROSTER[first]
+        if first in ROSTER and _exists(ROSTER[first]): return ROSTER[first]
     for pat,key in MOB_RULES:
-        if re.search(pat,name): return key
-    # 顔無しゼロ＝場面のbgで文/武の既定モブを出す（流用OK）
-    if bg in ('bg_kyutei','bg_shitsunai','bg_toshi'): return 'mob_bunkan'
-    return 'mob_busho'
+        if re.search(pat,name):
+            if key=='mob_busho': return _pick(name, MARTIAL_POOL)
+            return key
+    # 顔無しゼロ＝場面のbgで文/武の既定モブを出す（名前で顔を散らす）
+    if bg in ('bg_kyutei','bg_shitsunai','bg_toshi'): return _pick(name, CIVIL_POOL)
+    return _pick(name, MARTIAL_POOL)
 # 背景アーキタイプ（~16枚で全120回。moodはCSS色補正で昼夜＝画像は増やさない）
 BG_RULES=[ # (キーワード正規表現, bgキー)
  (r'宮|殿|朝廷|帝|后|禁中|内裏|玉座','bg_kyutei'),
@@ -185,7 +205,7 @@ def convert(n):
         # moodは幕の全文(地の文)から優勢気配を採る
         acttext=act['title']+' '+' '.join(x for x in items if not x.lstrip().startswith(('**','〔','［','【','---')))
         beats.append({'t':'bg','bg':actbg,'mood':mood_of(acttext)})
-        cur_sprite=None; flashed=False
+        cur_sprite=None; flashed=False; last_say_name=None
         for raw in items:
             s=raw.strip()
             if not s or s=='---': continue
@@ -194,9 +214,14 @@ def convert(n):
             if parsed:
                 name,text=parsed
                 key=resolve_sprite(name, actbg, n)
+                # 立ち絵無し武将同士の会話：直前と別人なのに同じモブ顔になるなら別バリアントへ（同顔が並ぶのを防ぐ）
+                if name!=last_say_name and key==cur_sprite and key and key.startswith(('mob_busho','mob_bunkan')):
+                    pool=MARTIAL_POOL if key.startswith('mob_busho') else CIVIL_POOL
+                    alts=[k for k in pool if _exists(k) and k!=cur_sprite]
+                    if alts: key=alts[_namehash(name)%len(alts)]
                 if key and os.path.exists(f'{SPRITES}/{key}.png') and key!=cur_sprite:
                     beats.append({'t':'sprite','key':key}); cur_sprite=key
-                beats.append({'t':'say','name':name,'text':text})
+                beats.append({'t':'say','name':name,'text':text}); last_say_name=name
             else:
                 for sent in split_sentences(s):
                     if actbg=='bg_senjo' and not flashed and _KILL.search(sent):

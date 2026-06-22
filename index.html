@@ -285,7 +285,7 @@ const SPEEDS=[{n:'瞬間',ms:0},{n:'速',ms:14},{n:'中',ms:28},{n:'遅',ms:48}]
 const FONTS=[{n:'小',v:0.9},{n:'標準',v:1.0},{n:'大',v:1.15},{n:'特大',v:1.32}];
 
 // ── セーブ/設定/進捗（localStorage・一本道VNなのでオートセーブ＋続きから＋読了管理） ──
-const BUILD='20260621';                 // キャッシュ版数（更新時に上げる）
+const BUILD='20260622';                 // キャッシュ版数（更新時に上げる）
 const SKEY='sangokushi_engi_vn_v1';
 let SAVE={resume:null, settings:{speedIdx:0, fontScale:1}, progress:{}};
 function loadSave(){ try{ const j=JSON.parse(localStorage.getItem(SKEY)||'null');
