@@ -89,6 +89,19 @@ def resolve_sprite(name, bg=None, ep=None):
     # 顔無しゼロ＝場面のbgで文/武の既定モブを出す（名前で顔を散らす）
     if bg in ('bg_kyutei','bg_shitsunai','bg_toshi'): return _pick(name, CIVIL_POOL)
     return _pick(name, MARTIAL_POOL)
+
+# 地の文の「焦点人物」＝立ち絵が在るロスター人物が段落の早い位置に主語的に現れたら、その人を映す（紹介/描写の間も表示）
+_ROSTER_NAMES=sorted([nm for nm,k in ROSTER.items() if _exists(k)], key=len, reverse=True)
+def focus_in(text):
+    best=None; bestpos=10**9
+    head=text[:40]
+    for nm in _ROSTER_NAMES:
+        p=head.find(nm)
+        if p>=0 and p<bestpos:
+            nxt=text[p+len(nm):p+len(nm)+1]
+            if nxt in 'はがもをにへとのや、。は':   # 助詞等が続く＝独立した人物言及（複合名の途中でない）
+                bestpos=p; best=nm
+    return best
 # 背景アーキタイプ（~16枚で全120回。moodはCSS色補正で昼夜＝画像は増やさない）
 BG_RULES=[ # (キーワード正規表現, bgキー)
  (r'宮|殿|朝廷|帝|后|禁中|内裏|玉座','bg_kyutei'),
@@ -169,6 +182,7 @@ def parse_say(s):
 _DEATH=re.compile(r'息絶え|事切れ|こと切れ|絶命|落命|薨去|薨じ|崩御|身罷|世を去っ|自刎|自害|刎ねて|斃れ|討ち死に|戦死|陣没|みまかっ')
 _KILL=re.compile(r'斬り捨て|斬って捨て|一刀のもとに|一刀の下に|首を刎ね|首を斬|討ち取った|突き伏せ|刺し殺|斬り落と|真っ二つ|斬り伏せ')  # 戦場の見せ場に閃光fxを1幕1回だけ
 _INSET=re.compile(r'^[〔［【]?挿絵')   # 〔挿絵〕も〔挿絵：…〕も（裸の挿絵も）全てスキップ
+_TRANS=re.compile(r'^(そのころ|さて|一方|やがて|こうして|ほどなく|まもなく|間もなく|翌|数日|十数日|幾日|時に|これより|その後|のちに|折しも|かくて|ここで|話は)')  # 場面転換/時の飛び＝立ち絵を一旦消す
 _QOPEN=re.compile(r'^\*\*[^*]+\*\*(?:[（(][^「」]*[)）])?「')  # 話者が鉤括弧を開く行
 
 def merge_multiline_quotes(items):
@@ -209,7 +223,7 @@ def convert(n):
         # moodは幕の全文(地の文)から優勢気配を採る
         acttext=act['title']+' '+' '.join(x for x in items if not x.lstrip().startswith(('**','〔','［','【','---')))
         beats.append({'t':'bg','bg':actbg,'mood':mood_of(acttext)})
-        cur_sprite=None; flashed=False; last_say_name=None; mob_assign={}; mob_ctr={'m':0,'c':0}
+        cur_sprite=None; flashed=False; last_say_name=None; mob_assign={}; mob_ctr={'m':0,'c':0}; narr_run=0
         for raw in items:
             s=raw.strip()
             if not s or s=='---': continue
@@ -227,8 +241,22 @@ def convert(n):
                     else: key=avail[mob_ctr[tp]%len(avail)]; mob_ctr[tp]+=1; mob_assign[name]=key
                 if key and os.path.exists(f'{SPRITES}/{key}.png') and key!=cur_sprite:
                     beats.append({'t':'sprite','key':key}); cur_sprite=key
-                beats.append({'t':'say','name':name,'text':text}); last_say_name=name
+                beats.append({'t':'say','name':name,'text':text}); last_say_name=name; narr_run=0
             else:
+                # 立ち絵の表示/クリアのタイミング＝地の文の「焦点」を映す
+                is_tr=bool(_TRANS.match(s))
+                if is_tr and cur_sprite:                       # 場面転換語＝一旦消す
+                    beats.append({'t':'hide'}); cur_sprite=None; narr_run=0
+                foc=focus_in(s)
+                if foc:                                         # 段落が或る人物の紹介/描写＝その人の立ち絵を出す（喋ってなくても）
+                    fk=resolve_sprite(foc, actbg, n)
+                    if fk and _exists(fk) and fk!=cur_sprite:
+                        beats.append({'t':'sprite','key':fk}); cur_sprite=fk
+                    narr_run=0
+                else:                                           # 焦点人物なしの地の文が続く＝会話/描写が終わった→立ち絵を消す
+                    narr_run+=1
+                    if cur_sprite and narr_run>=2:
+                        beats.append({'t':'hide'}); cur_sprite=None
                 for sent in split_sentences(s):
                     if actbg=='bg_senjo' and not flashed and _KILL.search(sent):
                         beats.append({'t':'fx','fx':'flash'}); flashed=True
