@@ -94,12 +94,12 @@ def resolve_sprite(name, bg=None, ep=None):
 _ROSTER_NAMES=sorted([nm for nm,k in ROSTER.items() if _exists(k)], key=len, reverse=True)
 def focus_in(text):
     best=None; bestpos=10**9
-    head=text[:40]
+    head=text[:60]
     for nm in _ROSTER_NAMES:
         p=head.find(nm)
         if p>=0 and p<bestpos:
             nxt=text[p+len(nm):p+len(nm)+1]
-            if nxt in 'はがもをにへとのや、。は':   # 助詞等が続く＝独立した人物言及（複合名の途中でない）
+            if nxt in 'はがもをにへとのや、。・　 と':   # 助詞/中黒/空白＝独立した人物言及（複合名の途中でない）。名前列挙(張角・張宝)は筆頭を焦点に
                 bestpos=p; best=nm
     return best
 # 背景アーキタイプ（~16枚で全120回。moodはCSS色補正で昼夜＝画像は増やさない）
